@@ -1,60 +1,60 @@
-# gor-mobile-rules-default — инструкции для Claude
+# gor-mobile-rules-default — instructions for Claude
 
-Rules-pack для CLI [gor-mobile](https://github.com/gorban-dev/gor-mobile).
+Rules pack for the [gor-mobile](https://github.com/gorban-dev/gor-mobile) CLI.
 
-## Структура (не менять без повода)
+## Structure (do not change without reason)
 
 ```
 manifest.json          # version, compatible_with, sections map
-rules/                 # секции (на них ссылаются slash-commands)
-  core.md              # ВСЕГДА в контексте — hard contract
+rules/                 # sections (referenced by slash commands)
+  core.md              # ALWAYS in context — hard contract
   architecture.md
   base-viewmodel.md
   theme-system.md
   modification.md
   testing-*.md
   debug-*.md
-examples/              # Kotlin-эталоны по слоям
+examples/              # Kotlin references per layer
   presentation/  usecase/  repository/  data/  di/
-examples/index.json    # используется /implement для подбора примеров
+examples/index.json    # used by /implement to pick examples
 ```
 
-## При изменениях
+## When making changes
 
-**Добавил/удалил/переименовал секцию в `rules/`:**
-1. Обновить `manifest.json` → `sections`.
-2. Проверить, что ни один slash-command в CLI-репо не ссылается на старое имя.
-3. Bump version в `manifest.json`:
-   - Переименовал/удалил секцию → **major**.
-   - Добавил новую секцию → **minor**.
-   - Правки внутри секции → **patch**.
+**Added/removed/renamed a section in `rules/`:**
+1. Update `manifest.json` → `sections`.
+2. Verify no slash command in the CLI repo references the old name.
+3. Bump version in `manifest.json`:
+   - Renamed/removed section → **major**.
+   - Added a new section → **minor**.
+   - In-section edits → **patch**.
 
-**Добавил пример в `examples/`:**
-1. Обновить `examples/index.json`.
+**Added an example under `examples/`:**
+1. Update `examples/index.json`.
 2. Bump minor.
 
-**Изменил форму `core.md`** (структура заголовков, якоря, которые парсит CLI):
-- Bump major + обновить `compatible_with` в `manifest.json`.
+**Changed the shape of `core.md`** (heading structure, anchors parsed by the CLI):
+- Bump major + update `compatible_with` in `manifest.json`.
 
-## Совместимость
+## Compatibility
 
-`manifest.compatible_with` — SemVer range CLI-версий, которые понимают pack.
-CLI при `rules update` откажется обновляться, если версия вне диапазона.
-Всегда сверяйся с актуальной версией CLI в `gor-mobile-rules-default/manifest.json`.
+`manifest.compatible_with` — SemVer range of CLI versions that understand this pack.
+On `rules update` the CLI refuses to update if the version falls outside the range.
+Always cross-check with the current CLI version in `gor-mobile-rules-default/manifest.json`.
 
-## Tag после merge
+## Tag after merge
 
-Создать git-тег `vX.Y.Z` совпадающий с `manifest.json/version` — пользователи пинят pack по тегу.
+Create a git tag `vX.Y.Z` matching `manifest.json/version` — users pin the pack by tag.
 
 ## Naming
 
-- Организация: **`gorban-dev/`**, не `gorban/`.
-- Секции в `manifest.json/sections` — kebab-case.
-- Примеры в `examples/` — PascalCase `.kt` файлы.
+- Org: **`gorban-dev/`**, not `gorban/`.
+- Sections in `manifest.json/sections` — kebab-case.
+- Examples in `examples/` — PascalCase `.kt` files.
 
-## Чеклист
+## Checklist
 
-- [ ] `manifest.json` актуален (sections, version, compatible_with)
-- [ ] `examples/index.json` синхронен с содержимым `examples/`
-- [ ] Bump согласно SemVer
-- [ ] Ни один slash-command в gor-mobile не сломался от переименования
+- [ ] `manifest.json` up to date (sections, version, compatible_with)
+- [ ] `examples/index.json` in sync with `examples/` contents
+- [ ] Bump per SemVer
+- [ ] No slash command in gor-mobile broke from a rename
