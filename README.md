@@ -1,5 +1,10 @@
 # gor-mobile-rules-default
 
+[![pack version](https://img.shields.io/github/v/tag/gorban-dev/gor-mobile-rules-default?label=pack&color=blue)](https://github.com/gorban-dev/gor-mobile-rules-default/tags)
+[![license](https://img.shields.io/github/license/gorban-dev/gor-mobile-rules-default)](./LICENSE)
+[![compat](https://img.shields.io/badge/gor--mobile-%E2%89%A50.1.0%20%3C2.0.0-informational)](https://github.com/gorban-dev/gor-mobile)
+[![stack](https://img.shields.io/badge/stack-android-green)]()
+
 Default rules pack for [`gor-mobile`](https://github.com/gorban-dev/gor-mobile) — a CLI that
 delegates Android code generation to local LLMs and wires a superpowers-style workflow
 into Claude Code.
