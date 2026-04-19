@@ -1,0 +1,20 @@
+{
+  "name": "gor-mobile-rules-default",
+  "version": "1.0.0",
+  "compatible_with": ">=0.1.0 <2.0.0",
+  "stack": "android",
+  "description": "Default architecture + testing + debug rules for gor-mobile.",
+  "sections": {
+    "core": "rules/core.md",
+    "architecture": "rules/architecture.md",
+    "base-viewmodel": "rules/base-viewmodel.md",
+    "theme-system": "rules/theme-system.md",
+    "modification": "rules/modification.md",
+    "testing-design": "rules/testing-design.md",
+    "testing-anti-patterns": "rules/testing-anti-patterns.md",
+    "testing-mocking": "rules/testing-mocking.md",
+    "debug-defense": "rules/debug-defense.md",
+    "debug-root-cause": "rules/debug-root-cause.md"
+  },
+  "examples_index": "examples/index.json"
+}

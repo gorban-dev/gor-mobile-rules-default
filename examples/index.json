@@ -1,0 +1,43 @@
+{
+  "layers": {
+    "presentation": {
+      "description": "Screen + View + ViewModel + ViewState/Event/Action",
+      "files": [
+        "examples/presentation/ExampleScreen.kt",
+        "examples/presentation/ExampleView.kt",
+        "examples/presentation/ExampleViewModel.kt",
+        "examples/presentation/ExampleViewState.kt",
+        "examples/presentation/ExampleViewEvent.kt",
+        "examples/presentation/ExampleViewAction.kt"
+      ]
+    },
+    "usecase": {
+      "description": "Business logic — one UseCase per action",
+      "files": [
+        "examples/usecase/ExampleUseCase.kt"
+      ]
+    },
+    "repository": {
+      "description": "Domain-data boundary; interface + implementation",
+      "files": [
+        "examples/repository/IExampleRepository.kt",
+        "examples/repository/ExampleRepository.kt"
+      ]
+    },
+    "data": {
+      "description": "DataSources, DTOs, persistence models",
+      "files": [
+        "examples/data/ExampleDataSource.kt",
+        "examples/data/ExampleData.kt",
+        "examples/data/ExampleResponse.kt"
+      ]
+    },
+    "di": {
+      "description": "Koin and Kodein module examples (use the one that matches the project)",
+      "files": [
+        "examples/di/ExampleDiModuleKoin.kt",
+        "examples/di/ExampleDiModuleKodein.kt"
+      ]
+    }
+  }
+}
