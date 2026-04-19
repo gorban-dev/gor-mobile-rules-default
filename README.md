@@ -1,6 +1,6 @@
 # gor-mobile-rules-default
 
-Default rules pack for [`gor-mobile`](https://github.com/gorban/gor-mobile) — a CLI that
+Default rules pack for [`gor-mobile`](https://github.com/gorban-dev/gor-mobile) — a CLI that
 delegates Android code generation to local LLMs and wires a superpowers-style workflow
 into Claude Code.
 
@@ -9,7 +9,7 @@ into Claude Code.
 The pack is cloned automatically by `gor-mobile init`. To switch to this pack manually:
 
 ```sh
-gor-mobile rules use https://github.com/gorban/gor-mobile-rules-default.git
+gor-mobile rules use https://github.com/gorban-dev/gor-mobile-rules-default.git
 ```
 
 ## Layout
