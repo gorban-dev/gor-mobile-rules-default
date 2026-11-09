@@ -10,12 +10,13 @@ rules/                 # sections (referenced by slash commands)
   core.md              # ALWAYS in context — hard contract
   architecture.md
   base-viewmodel.md
+  error-handling.md
   theme-system.md
   modification.md
   testing-*.md
   debug-*.md
 examples/              # Kotlin references per layer
-  presentation/  usecase/  repository/  data/  di/
+  presentation/  usecase/  repository/  data/  network/  di/
 examples/index.json    # used by /implement to pick examples
 ```
 

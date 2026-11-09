@@ -1,42 +1,58 @@
 {
   "layers": {
     "presentation": {
-      "description": "Screen + View + ViewModel + ViewState/Event/Action",
+      "description": "Screen + View + ViewModel + ViewState/Event/Action; shared UI error types (UiText, Content, UserMessage) and the LightDarkPreview annotation",
       "files": [
         "examples/presentation/ExampleScreen.kt",
         "examples/presentation/ExampleView.kt",
         "examples/presentation/ExampleViewModel.kt",
         "examples/presentation/ExampleViewState.kt",
         "examples/presentation/ExampleViewEvent.kt",
-        "examples/presentation/ExampleViewAction.kt"
+        "examples/presentation/ExampleViewAction.kt",
+        "examples/presentation/LightDarkPreview.kt",
+        "examples/presentation/UiText.kt",
+        "examples/presentation/UiTextExt.kt",
+        "examples/presentation/ApiErrorUiText.kt",
+        "examples/presentation/Content.kt",
+        "examples/presentation/UserMessage.kt",
+        "examples/presentation/AppMessageQueue.kt"
       ]
     },
     "usecase": {
-      "description": "Business logic — one UseCase per action",
+      "description": "Business logic — one UseCase per action (operator invoke); UseCase base interface and domain models",
       "files": [
-        "examples/usecase/ExampleUseCase.kt"
+        "examples/usecase/UseCase.kt",
+        "examples/usecase/ExampleUseCase.kt",
+        "examples/usecase/Example.kt"
       ]
     },
     "repository": {
-      "description": "Domain-data boundary; interface + implementation",
+      "description": "Domain-data boundary; interface + implementation returning ApiResult<KtorX>",
       "files": [
         "examples/repository/IExampleRepository.kt",
         "examples/repository/ExampleRepository.kt"
       ]
     },
     "data": {
-      "description": "DataSources, DTOs, persistence models",
+      "description": "DataSources on ApiClient, Ktor data models, Ktor -> domain mappers",
       "files": [
         "examples/data/ExampleDataSource.kt",
-        "examples/data/ExampleData.kt",
-        "examples/data/ExampleResponse.kt"
+        "examples/data/KtorExample.kt",
+        "examples/data/ExampleMapper.kt"
+      ]
+    },
+    "network": {
+      "description": "ApiClient, ApiResult, ApiError — the only way to the network; errors as values",
+      "files": [
+        "examples/network/ApiClient.kt",
+        "examples/network/ApiResult.kt",
+        "examples/network/ApiError.kt"
       ]
     },
     "di": {
-      "description": "Koin and Kodein module examples (use the one that matches the project)",
+      "description": "Koin module on the Koin Compiler Plugin DSL (compile-time graph verification)",
       "files": [
-        "examples/di/ExampleDiModuleKoin.kt",
-        "examples/di/ExampleDiModuleKodein.kt"
+        "examples/di/ExampleDiModuleKoin.kt"
       ]
     }
   }

@@ -15,7 +15,7 @@ assertEquals("Alice", result.name)  // Of course it's Alice — you set it up th
 // GOOD — test real behavior through the component
 val fakeRepo = FakeUserRepository(users = listOf(User("123", "Alice")))
 val useCase = GetUserUseCase(fakeRepo)
-val result = useCase.execute("123")
+val result = useCase("123")
 assertEquals("Alice", result.getOrNull()?.name)
 ```
 

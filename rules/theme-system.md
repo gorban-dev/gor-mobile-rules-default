@@ -1,34 +1,34 @@
-# Дизайн-система — тема, цвета, типографика
+# Design system — theme, colors, typography
 
-Проект использует **кастомную тему** (НЕ MaterialTheme). Название темы — проектное (например `EatGrowTheme`, `MyAppTheme`). Агент должен определить имя темы по существующему коду проекта (искать `*Theme` в `ui/theme/`).
+The project uses a **custom theme** (NOT MaterialTheme). The theme name is project-specific (e.g. `EatGrowTheme`, `MyAppTheme`). The agent must find the theme name in the existing project code (look for `*Theme` in `ui/theme/`).
 
-Далее `{App}Theme` — placeholder для реального имени темы проекта.
+Below, `{App}Theme` is a placeholder for the project's real theme name.
 
-## Как определить тему проекта
+## How to find the project theme
 
-Искать в проекте:
-1. `Grep` по паттерну `object.*Theme` в пакете `ui.theme`
-2. Или по `CompositionLocalProvider` в файлах `*Theme.kt`
+Search the project:
+1. `Grep` for the pattern `object.*Theme` in the `ui.theme` package
+2. Or for `CompositionLocalProvider` in `*Theme.kt` files
 
-## Доступ к теме
+## Accessing the theme
 
 ```kotlin
-// Цвета
+// Colors
 {App}Theme.colors.orange500
 {App}Theme.colors.grey100
 
-// Типографика
+// Typography
 {App}Theme.typography.body
 {App}Theme.typography.h3
 ```
 
-**ЗАПРЕЩЕНО:**
-- `MaterialTheme.colorScheme.*` — не используется
-- `MaterialTheme.typography.*` — не используется
-- Хардкод `Color(0xFF...)` в UI — только через `{App}Theme.colors`
-- Хардкод `TextStyle(fontSize = ...)` в UI — только через `{App}Theme.typography`
+**FORBIDDEN:**
+- `MaterialTheme.colorScheme.*` — not used
+- `MaterialTheme.typography.*` — not used
+- Hardcoded `Color(0xFF...)` in UI — only via `{App}Theme.colors`
+- Hardcoded `TextStyle(fontSize = ...)` in UI — only via `{App}Theme.typography`
 
-## Структура темы
+## Theme structure
 
 ```kotlin
 @Composable
@@ -37,7 +37,7 @@ fun {App}Theme(
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(
-        Local{App}Colors provides Colors,
+        Local{App}Colors provides if (darkTheme) DarkColors else LightColors,
         Local{App}Typography provides Typography,
         LocalRippleConfiguration provides CustomRippleConfiguration,
         content = content,
@@ -53,11 +53,13 @@ object {App}Theme {
 }
 ```
 
-## Цветовые палитры
+- The palette must depend on `darkTheme` (default `isSystemInDarkTheme()`): `@LightDarkPreview` switches `uiMode`, and a theme with a fixed palette renders the dark preview light.
 
-Типичные палитры с оттенками 50–900:
+## Color palettes
 
-| Палитра | Пример | Диапазон |
+Typical palettes with shades 50–900:
+
+| Palette | Example | Range |
 |---------|--------|----------|
 | Yellow | `{App}Theme.colors.yellow500` | 50–900 |
 | Orange | `{App}Theme.colors.orange500` | 50–900 |
@@ -66,13 +68,13 @@ object {App}Theme {
 | Violet | `{App}Theme.colors.violet500` | 50–900 |
 | Grey | `{App}Theme.colors.grey500` | 50–900 |
 
-Конкретные палитры и специальные цвета зависят от проекта — определяй по `{App}Colors` data class.
+Actual palettes and special colors depend on the project — check the `{App}Colors` data class.
 
-## Типографика
+## Typography
 
-Типичные стили:
+Typical styles:
 
-| Стиль | Размер | Вес |
+| Style | Size | Weight |
 |-------|--------|-----|
 | `h1`–`h5` | 61–25sp | SemiBold |
 | `bodyXL` / `bodyXLBold` | 20sp | Normal / Bold |
@@ -80,9 +82,9 @@ object {App}Theme {
 | `label` / `labelBold` | 13sp | Normal / SemiBold |
 | `caption` / `captionBold` | 10sp | Normal / Bold |
 
-Конкретные стили зависят от проекта — определяй по `{App}Typography` data class.
+Actual styles depend on the project — check the `{App}Typography` data class.
 
-## Пример использования в UI
+## Usage example in UI
 
 ```kotlin
 Text(

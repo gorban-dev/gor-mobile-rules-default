@@ -1,44 +1,44 @@
-# Правила безопасной модификации фичи
+# Safe feature modification rules
 
-## Принцип: расширяй, не ломай
+## Principle: extend, don't break
 
-При доработке существующей фичи приоритет — не сломать работающий функционал.
+When changing an existing feature, the priority is not to break working functionality.
 
-## Типовые сценарии модификации
+## Typical modification scenarios
 
-### Добавление нового поля на экран
-1. Добавь поле в `ViewState` с дефолтным значением
-2. Отобрази поле в `View`
-3. Если данные приходят с сервера → создай UseCase → обнови ViewModel
-4. Обнови DI если добавлен UseCase
+### Adding a new field to the screen
+1. Add the field to `ViewState` with a default value
+2. Render the field in `View`
+3. If the data comes from the server → create a UseCase → update the ViewModel
+4. Update DI if a UseCase was added
 
-### Добавление нового действия пользователя
-1. Добавь case в `ViewEvent`
-2. Добавь обработку в `ViewModel.obtainEvent()`
-3. Вызови `eventHandler(NewEvent)` из `View`
-4. При необходимости создай UseCase для обработки
+### Adding a new user action
+1. Add a case to `ViewEvent`
+2. Handle it in `ViewModel.obtainEvent()`
+3. Call `eventHandler(NewEvent)` from `View`
+4. Create a UseCase to handle it if needed
 
-### Добавление навигации
-1. Добавь case в `ViewAction`
-2. Из ViewModel: `viewAction = ViewAction.NavigateTo(...)`
-3. Обработай ViewAction в Screen или навигационном слое проекта
+### Adding navigation
+1. Add a case to `ViewAction`
+2. From the ViewModel: `viewAction = ViewAction.NavigateTo(...)`
+3. Handle the ViewAction in the Screen or in the project's navigation layer
 
-### Добавление нового API вызова
-1. Добавь метод в `DataSource`
-2. Добавь метод в `IRepository` (интерфейс) и `Repository` (реализация)
-3. Создай `UseCase` для нового вызова
-4. Обнови DI модуль
-5. Инжектируй UseCase в ViewModel
+### Adding a new API call
+1. Add a method to the `DataSource`
+2. Add a method to `IRepository` (interface) and `Repository` (implementation)
+3. Create a `UseCase` for the new call
+4. Update the DI module
+5. Inject the UseCase into the ViewModel
 
-### Добавление загрузки/пагинации
-1. Добавь поля в `ViewState` (isLoadingMore, currentPage, hasMore)
-2. Добавь событие `LoadMore` в `ViewEvent`
-3. Обработай в ViewModel с правильным состоянием
+### Adding loading/pagination
+1. Add fields to `ViewState` (isLoadingMore, currentPage, hasMore)
+2. Add a `LoadMore` event to `ViewEvent`
+3. Handle it in the ViewModel with the correct state
 
-## Что НЕЛЬЗЯ делать при модификации
-- Добавлять логику в View или Screen
-- Добавлять remember в Screen
-- Обращаться к Repository напрямую из ViewModel (только через UseCase)
-- Создавать god-файлы (объединять классы в один файл)
-- Менять сигнатуру существующего UseCase.execute() если он используется в других местах
-- Удалять поля ViewState без проверки что они не используются
+## What NOT to do when modifying
+- Add logic to View or Screen
+- Add remember to Screen
+- Access the Repository directly from the ViewModel (only through a UseCase)
+- Create god-files (merge classes into one file)
+- Change the signature of an existing UseCase.execute() if it is used elsewhere
+- Remove ViewState fields without checking that they are unused
