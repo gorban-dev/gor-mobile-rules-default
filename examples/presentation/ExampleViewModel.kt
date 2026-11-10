@@ -2,38 +2,52 @@ package com.company.app.feature.example.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.company.app.common.base.BaseSharedViewModel
+import com.company.app.common.domain.invoke
+import com.company.app.common.presentation.Content
+import com.company.app.common.presentation.UserMessage
+import com.company.app.common.presentation.toUiText
+import com.company.app.core.network.onFailure
+import com.company.app.core.network.onSuccess
 import com.company.app.feature.example.domain.usecase.GetExampleDataUseCase
 import kotlinx.coroutines.launch
 
 class ExampleViewModel(
-    private val getExampleDataUseCase: GetExampleDataUseCase
+    private val getExampleData: GetExampleDataUseCase,
 ) : BaseSharedViewModel<ExampleViewState, ExampleViewAction, ExampleViewEvent>(
     initialState = ExampleViewState()
 ) {
 
+    init {
+        loadData()
+    }
+
     override fun handleEvent(event: ExampleViewEvent) {
         when (event) {
             is ExampleViewEvent.LoadData -> loadData()
-            is ExampleViewEvent.OnItemClicked -> onItemClicked(event.itemId)
+            is ExampleViewEvent.MessageShown -> updateState { it.copy(message = null) }
+            is ExampleViewEvent.OnItemClicked -> sendAction(ExampleViewAction.NavigateToDetail(event.itemId))
         }
     }
 
+    /** A failed first load replaces the content; a failed reload keeps the data and shows a message. */
     private fun loadData() {
         viewModelScope.launch {
-            updateState { it.copy(isLoading = true, error = null) }
+            val hasData = viewState.content is Content.Data
+            if (!hasData) updateState { it.copy(content = Content.Loading) }
 
-            getExampleDataUseCase.execute(Unit).fold(
-                onSuccess = { data ->
-                    updateState { it.copy(isLoading = false, title = data.title) }
-                },
-                onFailure = { error ->
-                    updateState { it.copy(isLoading = false, error = error.message) }
+            getExampleData()
+                .onSuccess { data ->
+                    updateState { it.copy(content = Content.Data(data)) }
                 }
-            )
+                .onFailure { error ->
+                    updateState {
+                        if (hasData) {
+                            it.copy(message = UserMessage(error.toUiText()))
+                        } else {
+                            it.copy(content = Content.Error(error.toUiText()))
+                        }
+                    }
+                }
         }
-    }
-
-    private fun onItemClicked(itemId: String) {
-        sendAction(ExampleViewAction.NavigateToDetail(itemId))
     }
 }

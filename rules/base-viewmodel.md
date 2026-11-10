@@ -1,6 +1,6 @@
-# BaseSharedViewModel — справочник API
+# BaseSharedViewModel — API reference
 
-## Сигнатура
+## Signature
 
 ```kotlin
 abstract class BaseSharedViewModel<State : Any, Action : Any, Event : Any>(
@@ -8,84 +8,89 @@ abstract class BaseSharedViewModel<State : Any, Action : Any, Event : Any>(
 ) : ViewModel()
 ```
 
-**Дженерики:**
-- `State` — неизменяемое состояние экрана (data class)
-- `Action` — одноразовые события для UI: навигация, тосты, снэкбары (sealed class)
-- `Event` — намерения пользователя из UI: клики, ввод, скролл (sealed class)
+**Generics:**
+- `State` — immutable screen state (data class). Holds errors and transient messages too (`Content.Error`, `UserMessage`).
+- `Action` — one-off events for the UI: navigation, system intents (sealed interface). NOT errors, NOT snackbars.
+- `Event` — user intents from the UI: clicks, input, scroll, `MessageShown` (sealed interface)
 
-## Публичный API (для Screen/View)
+The base class does not implement `KoinComponent` and does not look anything up from DI: every dependency comes through the subclass constructor.
 
-| Метод | Возвращает | Назначение |
+## Public API (for Screen/View)
+
+| Method | Returns | Purpose |
 |-------|-----------|------------|
-| `viewStates()` | `StateFlow<State>` | Подписка на состояние экрана |
-| `viewActions()` | `Flow<Action>` | Подписка на одноразовые действия |
-| `handleEvent(event)` | `Unit` | Отправка события от UI |
+| `viewStates()` | `StateFlow<State>` | Subscribe to the screen state |
+| `viewActions()` | `Flow<Action>` | Subscribe to one-off actions |
+| `handleEvent(event)` | `Unit` | Send an event from the UI |
 
-## Защищённый API (для наследников ViewModel)
+## Protected API (for ViewModel subclasses)
 
-| Метод / свойство | Тип | Назначение |
+| Method / property | Type | Purpose |
 |------------------|-----|------------|
-| `viewState` | `State` (get-only) | Текущее состояние (read-only) |
-| `updateState(reducer)` | `(State) -> State` | Атомарное обновление состояния |
-| `sendAction(action)` | `Action` | Отправка одноразового действия в UI |
+| `viewState` | `State` (get-only) | Current state (read-only) |
+| `updateState(reducer)` | `(State) -> State` | Atomic state update (`MutableStateFlow.update`) |
+| `sendAction(action)` | `Action` | Send a one-off action to the UI |
 
-## Внутренняя реализация
+## Internal implementation
 
-- Состояние хранится в `MutableStateFlow`, наружу отдаётся `StateFlow` (immutable)
-- Действия передаются через `Channel(BUFFERED)` → `receiveAsFlow()` — гарантия доставки каждого действия ровно один раз
-- `onCleared()` закрывает канал действий
+- The state is kept in a `MutableStateFlow` and exposed as an immutable `StateFlow`
+- Actions go through `Channel(BUFFERED)` → `receiveAsFlow()` — every action is delivered once; equal actions are not merged
+- `onCleared()` closes the action channel
 
-## Паттерн использования в ViewModel
+## Usage in a ViewModel
 
 ```kotlin
 class {Feature}ViewModel(
-    private val someUseCase: SomeUseCase
+    private val getData: Get{Feature}DataUseCase,
 ) : BaseSharedViewModel<{Feature}ViewState, {Feature}ViewAction, {Feature}ViewEvent>(
     initialState = {Feature}ViewState()
 ) {
 
+    init {
+        loadData()
+    }
+
     override fun handleEvent(event: {Feature}ViewEvent) {
         when (event) {
             is {Feature}ViewEvent.LoadData -> loadData()
-            is {Feature}ViewEvent.OnItemClicked -> onItemClicked(event.itemId)
+            is {Feature}ViewEvent.MessageShown -> updateState { it.copy(message = null) }
+            is {Feature}ViewEvent.OnItemClicked -> sendAction({Feature}ViewAction.NavigateToDetail(event.itemId))
         }
     }
 
     private fun loadData() {
         viewModelScope.launch {
-            updateState { it.copy(isLoading = true, error = null) }
+            updateState { it.copy(content = Content.Loading) }
 
-            someUseCase.execute(Unit).fold(
-                onSuccess = { data ->
-                    updateState { it.copy(isLoading = false, title = data.title) }
-                },
-                onFailure = { error ->
-                    updateState { it.copy(isLoading = false, error = error.message) }
+            getData()
+                .onSuccess { data ->
+                    updateState { it.copy(content = Content.Data(data)) }
                 }
-            )
+                .onFailure { error ->
+                    updateState { it.copy(content = Content.Error(error.toUiText())) }
+                }
         }
-    }
-
-    private fun onItemClicked(itemId: String) {
-        sendAction({Feature}ViewAction.NavigateToDetail(itemId))
     }
 }
 ```
 
-## Паттерн использования в Screen
+- Results are `ApiResult<T>` — `onSuccess {}.onFailure {}`; cancellation never reaches `onFailure`.
+- A failed action or reload with data on screen → `updateState { it.copy(message = UserMessage(error.toUiText())) }`.
+- Full error rules: `rules/error-handling.md`.
+
+## Usage in a Screen
 
 ```kotlin
 @Composable
-fun {Feature}Screen(viewModel: {Feature}ViewModel = viewModel()) {
+fun {Feature}Screen(
+    onNavigateToDetail: (String) -> Unit,
+    viewModel: {Feature}ViewModel = koinViewModel(),
+) {
     val state by viewModel.viewStates().collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     viewModel.viewActions().CollectWithLifecycle { action ->
         when (action) {
-            is {Feature}ViewAction.ShowToast -> {
-                Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
-            }
-            is {Feature}ViewAction.NavigateToDetail -> { /* навигация */ }
+            is {Feature}ViewAction.NavigateToDetail -> onNavigateToDetail(action.itemId)
         }
     }
 
@@ -96,13 +101,14 @@ fun {Feature}Screen(viewModel: {Feature}ViewModel = viewModel()) {
 }
 ```
 
-**Важно:**
-- Состояние: `collectAsStateWithLifecycle()` (НЕ `collectAsState()`) — автоматически останавливает подписку когда lifecycle уходит ниже STARTED
-- Действия: `CollectWithLifecycle` — проектный extension, безопасно собирает Flow с учётом lifecycle
+**Important:**
+- State: `collectAsStateWithLifecycle()` (NOT `collectAsState()`, NOT custom `observeAsState()`) — stops collecting automatically when the lifecycle drops below STARTED
+- Actions: `CollectWithLifecycle` — project extension, collects the Flow lifecycle-aware. Never collect actions as state (`observeAsState`, `collectAsState`): equal actions in a row get merged and lost
+- The snackbar for `viewState.message` is shown in View (`LaunchedEffect(message.id)`), not in Screen
 
 ## CollectWithLifecycle extension
 
-Проектный extension для lifecycle-aware сбора одноразовых действий. Должен существовать в проекте (обычно в `common/extensions/` или `common/ui/`). Если отсутствует — создать.
+Project extension for lifecycle-aware collection of one-off actions. Must exist in the project (usually in `common/extensions/` or `common/ui/`). If missing — create it.
 
 ```kotlin
 @Composable
