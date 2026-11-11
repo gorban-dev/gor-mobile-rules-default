@@ -3,15 +3,15 @@
 These rules ALWAYS apply when working with Android code in the project.
 
 ## Screen/View Separation
-- **Screen** — thin adapter: reads viewState via `collectAsStateWithLifecycle()`, subscribes to actions via `CollectWithLifecycle {}`, passes viewState and eventHandler to View. No logic, no remember, no computations, no side-effects (including `LaunchedEffect` / `LifecycleStartEffect` that send events). No UI state (PagerState, ScrollState, LazyListState — these belong in View).
-- **View** — pure UI: only layout based on viewState and calling eventHandler. No business logic. UI state (`rememberPagerState`, `rememberScrollState`, `rememberLazyListState`, `SnackbarHostState`) is allowed here. `LaunchedEffect`/`snapshotFlow` for syncing UI state with eventHandler is allowed here (e.g. show `viewState.message`, then send `MessageShown`).
+- **Screen** — thin adapter: reads viewState via `collectAsStateWithLifecycle()`, subscribes to actions via `CollectWithLifecycle {}` (system intents only; a screen without actions skips it), passes viewState and eventHandler to View. Takes navigation callbacks as parameters. No logic, no remember, no computations, no side-effects — except one: a `LaunchedEffect` that turns a navigation field of ViewState into a navigation callback (see `rules/architecture.md`, Navigation). No UI state (PagerState, ScrollState, LazyListState — these belong in View).
+- **View** — pure UI: only layout based on viewState and calling eventHandler. No business logic. UI state (`rememberPagerState`, `rememberScrollState`, `rememberLazyListState`, `SnackbarHostState`) is allowed here. `LaunchedEffect`/`snapshotFlow` for syncing UI state with eventHandler is allowed here (e.g. show `viewState.message`, then send `MessageShown`). Pure navigation clicks (no logic) call navigation callbacks passed from Screen, wrapped in `dropUnlessResumed { }`.
 
 ## ViewModel
 - Single source of logic. Extends `BaseSharedViewModel<State, Action, Event>`.
 - Holds state, processes events via `handleEvent()`, executes use cases.
-- State updates: `updateState { it.copy(...) }`. One-off actions: `sendAction(...)` — navigation only; errors and messages go into the state.
+- State updates: `updateState { it.copy(...) }`. One-off actions: `sendAction(...)` — system intents only (call, map, settings); errors, messages and navigation go into the state.
 - May call a Repository directly when a UseCase would only forward the call. Logic, combining several sources or reuse → UseCase.
-- Navigation — only within ViewModel through the project's navigation mechanism.
+- ViewModel never navigates and does not know the navigator. A transition after ViewModel logic is a ViewState field; Screen executes it. The back stack and `Navigator` live in `{App}NavHost`; screen keys are `@Serializable` subtypes of `{App}NavKey` in the app-level `navigation/` package.
 - Compose dependencies in ViewModel are FORBIDDEN.
 
 ## UseCase
@@ -49,12 +49,12 @@ These rules ALWAYS apply when working with Android code in the project.
 The project is split by feature; inside a feature — by Clean Architecture layer. The structure is STRICT: every file goes to its folder, no files in the feature root.
 ```
 feature/{featureName}/
-    presentation/screen/  presentation/view/  presentation/viewmodel/
+    presentation/screen/  presentation/view/  presentation/viewmodel/  presentation/model/
     domain/model/  domain/usecase/  domain/repository/
     data/datasource/  data/model/  data/mapper/  data/repository/
     di/
 ```
-- `ViewState` / `ViewEvent` / `ViewAction` — `presentation/viewmodel/`.
+- `ViewModel` alone in `presentation/viewmodel/`; its `ViewState` / `ViewEvent` / `ViewAction` — `presentation/model/` (one file per package keeps the ViewModel easy to find).
 - Repository interface — `domain/repository/`, implementation — `data/repository/`.
 
 ## File Rules
@@ -86,5 +86,6 @@ feature/{featureName}/
 - try/catch around network calls, `catch (e: Exception)` / `runCatching` that swallow `CancellationException`
 - Navigation or showing errors in UseCase / Repository
 - Errors as one-off actions — they go into ViewState
+- Navigation as one-off actions, `Navigator` in DI or in a ViewModel, navigation from the data layer
 - MaterialTheme for colors and typography — only `{App}Theme`
 - `KoinComponent` / service-locator lookups outside entry points

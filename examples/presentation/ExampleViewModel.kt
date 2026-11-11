@@ -8,11 +8,16 @@ import com.company.app.common.presentation.UserMessage
 import com.company.app.common.presentation.toUiText
 import com.company.app.core.network.onFailure
 import com.company.app.core.network.onSuccess
+import com.company.app.feature.example.domain.repository.IExampleRepository
 import com.company.app.feature.example.domain.usecase.GetExampleDataUseCase
+import com.company.app.feature.example.presentation.model.ExampleViewAction
+import com.company.app.feature.example.presentation.model.ExampleViewEvent
+import com.company.app.feature.example.presentation.model.ExampleViewState
 import kotlinx.coroutines.launch
 
 class ExampleViewModel(
     private val getExampleData: GetExampleDataUseCase,
+    private val repository: IExampleRepository,
 ) : BaseSharedViewModel<ExampleViewState, ExampleViewAction, ExampleViewEvent>(
     initialState = ExampleViewState()
 ) {
@@ -25,7 +30,9 @@ class ExampleViewModel(
         when (event) {
             is ExampleViewEvent.LoadData -> loadData()
             is ExampleViewEvent.MessageShown -> updateState { it.copy(message = null) }
-            is ExampleViewEvent.OnItemClicked -> sendAction(ExampleViewAction.NavigateToDetail(event.itemId))
+            is ExampleViewEvent.OnSaveClicked -> save()
+            is ExampleViewEvent.SavedHandled -> updateState { it.copy(isSaved = false) }
+            is ExampleViewEvent.OnCallClicked -> sendAction(ExampleViewAction.OpenDialer(event.phone))
         }
     }
 
@@ -48,6 +55,15 @@ class ExampleViewModel(
                         }
                     }
                 }
+        }
+    }
+
+    /** The ViewModel does not navigate: success sets [ExampleViewState.isSaved], Screen closes the screen. */
+    private fun save() {
+        viewModelScope.launch {
+            repository.saveExample()
+                .onSuccess { updateState { it.copy(isSaved = true) } }
+                .onFailure { error -> updateState { it.copy(message = UserMessage(error.toUiText())) } }
         }
     }
 }

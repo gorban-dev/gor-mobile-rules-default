@@ -13,4 +13,8 @@ class ExampleRepository(
     override suspend fun getExample(): ApiResult<KtorExample> {
         return remoteDataSource.fetchExample()
     }
+
+    override suspend fun saveExample(): ApiResult<Unit> {
+        return remoteDataSource.saveExample()
+    }
 }

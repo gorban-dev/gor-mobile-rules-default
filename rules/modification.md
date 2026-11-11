@@ -19,9 +19,12 @@ When changing an existing feature, the priority is not to break working function
 4. Create a UseCase to handle it if needed
 
 ### Adding navigation
-1. Add a case to `ViewAction`
-2. From the ViewModel: `sendAction(ViewAction.NavigateTo(...))`
-3. Handle the ViewAction in the Screen or in the project's navigation layer
+1. Add a `@Serializable` key to `navigation/` as a subtype of `{App}NavKey` (arguments as fields)
+2. Register the screen in `{App}NavHost`: `entry<{Screen}Key> { key -> {Screen}Screen(id = key.id, onBack = navigator::back) }`
+3. Screen arguments reach the ViewModel through `koinViewModel { parametersOf(id) }` and an `@InjectedParam` constructor parameter
+4. Pure click → navigation callback from Screen to View, `dropUnlessResumed { onOpen(id) }`. Transition after ViewModel logic → ViewState field + reset event, Screen executes it in `LaunchedEffect`
+5. App-wide transition (401, logout, push) → state in a repository, collected by `{App}NavHost`
+6. Do not add a `ViewAction` for navigation and do not inject the navigator anywhere
 
 ### Adding a new API call
 1. Add a method to the `DataSource` that calls `ApiClient` and returns `ApiResult<KtorX>`

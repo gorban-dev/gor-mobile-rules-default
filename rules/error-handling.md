@@ -69,7 +69,7 @@ Following the Android UI events guide: a ViewModel event always ends as a state 
 - Only in `ApiError.toUiText()` (presentation). It returns `UiText` — a resource id or a raw backend string; the UI resolves it with `asString()`.
 - `Http` with `serverMessage` → `UiText.Raw(serverMessage)`; otherwise a generic server error.
 - `Network` → "no connection / timeout" text, shown on the screen. A timeout can happen with a live connection, so it is never silent.
-- `Unauthorized` / `Banned` → neutral text; the session layer reacts (token refresh via Ktor Auth, then logout and navigation to login at the app root). The screen only resets its loading state.
+- `Unauthorized` / `Banned` → neutral text; the session layer reacts (see "401 / session expired"). The screen only resets its loading state.
 
 ### ViewModel shape
 ```kotlin
@@ -83,6 +83,13 @@ viewModelScope.launch {
 - "Navigate on any outcome" — in both `onSuccess` and `onFailure`, not in `finally` (it would fire when the screen closes).
 - Fan-out: `async { repo.a() }` + `async { repo.b() }` — each returns its own `ApiResult`, one failure does not cancel the other.
 - `getOrElse { return@launch }` — only when the value feeds the next request.
+
+### 401 / session expired
+- Token refresh is the Ktor Auth plugin's job. A 401 that still reaches `ApiClient` means the session is over.
+- `ApiClient` on 401 calls `sessionRepository.expire()` and returns `ApiResult.Failure(ApiError.Unauthorized)` as usual. It does not navigate and does not show anything.
+- `SessionRepository` (`core/session/`, `single`) holds `StateFlow<SessionState>`: `Active` / `Expired`. Login calls `start()`, logout and 401 call `expire()`.
+- The screen handles `Unauthorized` like any other failure (neutral text or nothing). The transition to login is made by `{App}NavHost` on `SessionState.Expired`, see `rules/architecture.md`, section 3a.
+- Handling 401 with a transition in every screen is FORBIDDEN.
 
 ### App level
 - Offline banner — once at the app root from a `NetworkMonitor` (OS connectivity), not from `ApiError.Network` of single requests (Now in Android).
