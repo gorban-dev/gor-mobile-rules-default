@@ -5,7 +5,7 @@ import io.ktor.http.HttpStatusCode
 /** Why a request failed. A value carried by [ApiResult.Failure], not an exception. */
 sealed interface ApiError {
 
-    /** 401. The session layer reacts to it (token refresh / logout); screens only reset their loading state. */
+    /** 401 after the Ktor Auth refresh failed. [ApiClient] expires the session; screens only reset their loading state. */
     data object Unauthorized : ApiError
 
     /** Project-specific status for a blocked account (apteka.ru uses 432). Delete it if the backend has none. */

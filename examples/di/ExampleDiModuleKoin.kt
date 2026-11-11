@@ -13,7 +13,7 @@ import org.koin.plugin.module.dsl.viewModel
 
 // Koin Compiler Plugin DSL: constructors are wired and the graph is verified at build time.
 // Needs the io.insert-koin.compiler.plugin Gradle plugin in this module (Kotlin >= 2.3.20).
-// ApiClient comes from the app's network module.
+// ApiClient comes from the app's network module. Navigator is not in DI: AppNavHost creates it.
 val exampleModule = module {
     single<ExampleRemoteDataSource>()
     single<ExampleRepository>() bind IExampleRepository::class

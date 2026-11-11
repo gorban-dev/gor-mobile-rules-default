@@ -18,6 +18,17 @@
         "examples/presentation/AppMessageQueue.kt"
       ]
     },
+    "navigation": {
+      "description": "Navigation 3 by the Google recipes: Navigator over NavBackStack created in AppNavHost (not in DI), sealed AppNavKey and @Serializable screen keys, transitions as lambdas, session state collected by the host",
+      "files": [
+        "examples/navigation/Navigator.kt",
+        "examples/navigation/AppNavHost.kt",
+        "examples/navigation/AppNavKey.kt",
+        "examples/navigation/ExampleKey.kt",
+        "examples/navigation/ExampleDetailKey.kt",
+        "examples/navigation/LoginKey.kt"
+      ]
+    },
     "usecase": {
       "description": "Business logic — one UseCase per action (operator invoke); UseCase base interface and domain models",
       "files": [
@@ -47,6 +58,13 @@
         "examples/network/ApiClient.kt",
         "examples/network/ApiResult.kt",
         "examples/network/ApiError.kt"
+      ]
+    },
+    "session": {
+      "description": "App-wide session state (StateFlow<SessionState>); ApiClient expires it on 401, AppNavHost reacts — events outside screens as state",
+      "files": [
+        "examples/session/SessionState.kt",
+        "examples/session/SessionRepository.kt"
       ]
     },
     "di": {

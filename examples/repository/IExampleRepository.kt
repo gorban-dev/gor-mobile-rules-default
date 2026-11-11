@@ -6,4 +6,5 @@ import com.company.app.feature.example.data.model.KtorExample
 @MustUseReturnValues
 interface IExampleRepository {
     suspend fun getExample(): ApiResult<KtorExample>
+    suspend fun saveExample(): ApiResult<Unit>
 }

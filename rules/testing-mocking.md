@@ -76,6 +76,28 @@ class FakePaymentGateway : PaymentGateway {
 }
 ```
 
+## Navigation in tests
+
+The ViewModel does not navigate, so there is nothing to fake: a transition after logic is a state field.
+
+```kotlin
+@Test
+fun `save success asks the screen to close`() = runTest {
+    val viewModel = ExampleViewModel(getExampleData = FakeGetExampleData(), repository = FakeExampleRepository())
+
+    viewModel.handleEvent(ExampleViewEvent.OnSaveClicked)
+    assertTrue(viewModel.viewStates().value.isSaved)
+
+    viewModel.handleEvent(ExampleViewEvent.SavedHandled)
+    assertFalse(viewModel.viewStates().value.isSaved)
+}
+```
+
+- `viewModelScope` runs on `Dispatchers.Main`: the test class sets `Dispatchers.setMain(UnconfinedTestDispatcher())` in `@Before` and `Dispatchers.resetMain()` in `@After`, so `save()` completes before the assert.
+- `Navigator` is tested on a real stack, no fakes: `Navigator(NavBackStack<NavKey>(ExampleKey))` — double tap, root `back()`, `replaceAll`.
+- Pure navigation clicks are View callbacks; a ViewModel test never sees them.
+- `viewActions()` is asserted only for system intents (`OpenDialer`).
+
 ## Key Principle
 
 > Each mock returns one specific shape. If you need complex conditional behavior from a mock, you're mocking too much — use a real component or a richer fake.

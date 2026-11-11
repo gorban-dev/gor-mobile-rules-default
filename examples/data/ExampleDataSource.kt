@@ -17,4 +17,12 @@ class ExampleRemoteDataSource(
             }
         }
     }
+
+    suspend fun saveExample(): ApiResult<Unit> {
+        return api.post {
+            url {
+                path("api/example/save")
+            }
+        }
+    }
 }

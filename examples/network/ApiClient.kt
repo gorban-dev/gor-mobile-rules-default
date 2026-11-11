@@ -1,5 +1,6 @@
 package com.company.app.core.network
 
+import com.company.app.core.session.SessionRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
@@ -24,21 +25,31 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * The only way datasources talk to the network: every call returns [ApiResult] and never throws a request failure.
  * The [HttpClient] must be built with `expectSuccess = true`, so non-2xx responses reach [toApiError].
+ * A 401 expires the session; the caller still gets [ApiError.Unauthorized], and `AppNavHost` moves to login.
  */
 @MustUseReturnValues
-class ApiClient(@PublishedApi internal val httpClient: HttpClient) {
+class ApiClient(
+    @PublishedApi internal val httpClient: HttpClient,
+    @PublishedApi internal val sessionRepository: SessionRepository,
+) {
 
     suspend inline fun <reified T> get(noinline block: HttpRequestBuilder.() -> Unit): ApiResult<T> =
-        apiCall { httpClient.get(block).typedBody<T>() }
+        apiCall { httpClient.get(block).typedBody<T>() }.expireOnUnauthorized()
 
     suspend inline fun <reified T> post(noinline block: HttpRequestBuilder.() -> Unit): ApiResult<T> =
-        apiCall { httpClient.post(block).typedBody<T>() }
+        apiCall { httpClient.post(block).typedBody<T>() }.expireOnUnauthorized()
 
     suspend inline fun <reified T> put(noinline block: HttpRequestBuilder.() -> Unit): ApiResult<T> =
-        apiCall { httpClient.put(block).typedBody<T>() }
+        apiCall { httpClient.put(block).typedBody<T>() }.expireOnUnauthorized()
 
     suspend inline fun <reified T> delete(noinline block: HttpRequestBuilder.() -> Unit): ApiResult<T> =
-        apiCall { httpClient.delete(block).typedBody<T>() }
+        apiCall { httpClient.delete(block).typedBody<T>() }.expireOnUnauthorized()
+
+    /** The network layer only changes session state on 401; it never navigates. */
+    @PublishedApi
+    internal fun <T> ApiResult<T>.expireOnUnauthorized(): ApiResult<T> = also {
+        if (it is ApiResult.Failure && it.error == ApiError.Unauthorized) sessionRepository.expire()
+    }
 }
 
 /** The single place where a thrown request failure becomes an [ApiError]. Cancellation is never swallowed. */
